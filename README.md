@@ -1,31 +1,33 @@
 # mac-lid-audio-guard
 
-macOS 合盖静音与蓝牙防唤醒工具。它用于避免 MacBook 合盖后被蓝牙键盘或鼠标唤醒，并阻止音乐、视频或系统提示音在夜间意外发声。
+English | [简体中文](README.zh-CN.md)
 
-项目包含两层相互独立的保护：
+A macOS utility that mutes audio when a MacBook lid is closed and prevents Bluetooth devices from waking the Mac. It helps keep Bluetooth keyboards and mice from waking a closed MacBook and stops music, videos, or system alerts from playing unexpectedly at night.
+
+The project provides two independent layers of protection:
 
 ```text
-蓝牙 HID 活动
+Bluetooth HID activity
     └─ RemoteWakeEnabled = false
 
-合盖事件
-    ├─ 保存原输出路由、静音与音量
-    ├─ 静音所有可控制输出
-    ├─ 将默认/系统声音路由到已静音的安全设备
-    ├─ 暂停当前媒体服务
-    └─ 开盖后精确恢复并清除临时状态
+Lid-close event
+    ├─ Save the original output routes, mute states, and volume levels
+    ├─ Mute every controllable output device
+    ├─ Route default and system audio to a muted safe device
+    ├─ Pause active media services
+    └─ Restore the exact previous state and remove temporary state after the lid opens
 ```
 
-## 当前验证环境
+## Verified environment
 
 - macOS 26.5.2
-- Apple Silicon（M4）
-- DELL S2725QC 外接显示器
-- MacBook 内建扬声器
-- QQ 音乐 11.7.0
-- MX2.0S Bluetooth LE 键盘
+- Apple Silicon (M4)
+- DELL S2725QC external monitor
+- Built-in MacBook speakers
+- QQ Music 11.7.0
+- MX2.0S Bluetooth LE keyboard
 
-## 快速使用
+## Quick start
 
 ```bash
 cd ~/workspace/mac-lid-audio-guard
@@ -34,16 +36,16 @@ cd ~/workspace/mac-lid-audio-guard
 ./scripts/status.sh
 ```
 
-安装蓝牙防唤醒时需要一次管理员权限，用于把
-`RemoteWakeEnabled=false` 立即写入正在运行的蓝牙控制器。蓝牙开关、配对记录及清醒状态下的使用不受影响。
+Installing Bluetooth wake prevention requires administrator privileges once so that
+`RemoteWakeEnabled=false` can be applied immediately to the active Bluetooth controller. This does not affect the Bluetooth power state, pairing records, or normal Bluetooth use while the Mac is awake.
 
-如果只需要安装或更新合盖静音监听器，保留现有蓝牙设置：
+To install or update only the lid-close audio listener while keeping the current Bluetooth settings:
 
 ```bash
 ./scripts/install.sh --skip-bluetooth-wake
 ```
 
-## 常用命令
+## Common commands
 
 ```bash
 make build
@@ -57,40 +59,39 @@ make status
 ./scripts/uninstall.sh
 ```
 
-`test.sh` 会执行编译器告警检查、Clang 静态分析、Shell 语法检查、LaunchAgent plist 校验，以及一次短暂的“静音 → 安全路由 → 状态落盘 → 模拟重启 → 精确恢复”测试。测试不会主动播放声音。
+`test.sh` checks compiler warnings, runs Clang static analysis, validates shell syntax and the LaunchAgent plist, and performs a short live test covering “mute → safe routing → state persistence → simulated restart → exact restoration.” The test does not intentionally play any audio.
 
-只做静态检查时：
+To run static checks only:
 
 ```bash
 ./scripts/test.sh --no-live-test
 ```
 
-## 安装位置
+## Installation paths
 
-- 监听器：`~/Library/Application Support/LidAudioGuard/lid-audio-guard`
-- 登录项：`~/Library/LaunchAgents/com.younglue.lid-audio-guard.plist`
-- 日志：`~/Library/Logs/LidAudioGuard.log`
-- 合盖期间的恢复状态：`~/Library/Application Support/LidAudioGuard/saved-audio-state.plist`
+- Listener: `~/Library/Application Support/LidAudioGuard/lid-audio-guard`
+- Login item: `~/Library/LaunchAgents/com.younglue.lid-audio-guard.plist`
+- Log: `~/Library/Logs/LidAudioGuard.log`
+- Recovery state while the lid is closed: `~/Library/Application Support/LidAudioGuard/saved-audio-state.plist`
 
-恢复状态只在合盖保护激活时存在。正常开盖后应自动删除。
+The recovery state exists only while lid-close protection is active. It should be removed automatically after the lid is opened normally.
 
-## 项目结构
+## Project structure
 
 ```text
-src/LidAudioGuard.m              合盖、CoreAudio 静音与恢复逻辑
-src/BluetoothWakeControl.c       实时蓝牙远程唤醒属性控制
-config/*.plist.in                LaunchAgent 模板
-scripts/build.sh                 构建两个原生 arm64 工具
-scripts/install.sh               安装并加载
-scripts/uninstall.sh             恢复状态并卸载
-scripts/status.sh                只读运行态检查
-scripts/test.sh                  静态与实时恢复测试
-docs/incident-and-design.md      原始问题与设计边界
+src/LidAudioGuard.m              Lid events and CoreAudio mute/restore logic
+src/BluetoothWakeControl.c       Live Bluetooth remote-wake property control
+config/*.plist.in                LaunchAgent template
+scripts/build.sh                 Build the two native arm64 utilities
+scripts/install.sh               Install and load
+scripts/uninstall.sh             Restore state and uninstall
+scripts/status.sh                Read-only runtime status checks
+scripts/test.sh                  Static checks and live restoration test
+docs/incident-and-design.md      Original incident and design boundaries
 ```
 
-## 设计说明
+## Design notes
 
-合盖静音使用公开的 IOKit 合盖通知与 CoreAudio 属性。媒体暂停使用系统内置 MediaRemote 通道，属于额外保险；即使未来系统版本不再接受媒体暂停命令，静音与安全路由仍是主要防线。
+Lid-close muting uses public IOKit lid notifications and CoreAudio properties. Media pausing uses the system-provided MediaRemote channel as an additional safeguard. Even if a future macOS version stops accepting media pause commands, muting and safe routing remain the primary defenses.
 
-完整背景见 [docs/incident-and-design.md](docs/incident-and-design.md)。
-
+For the full background, see [docs/incident-and-design.md](docs/incident-and-design.md).
