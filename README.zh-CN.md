@@ -95,3 +95,7 @@ docs/incident-and-design.md      原始问题与设计边界
 合盖静音使用公开的 IOKit 合盖通知与 CoreAudio 属性。媒体暂停使用系统内置 MediaRemote 通道，属于额外保险；即使未来系统版本不再接受媒体暂停命令，静音与安全路由仍是主要防线。
 
 完整背景见 [docs/incident-and-design.md](docs/incident-and-design.md)。
+
+## 许可证
+
+本项目采用 MIT 许可证，详细内容见 [LICENSE](LICENSE) 文件。

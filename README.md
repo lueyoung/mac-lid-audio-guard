@@ -95,3 +95,7 @@ docs/incident-and-design.md      Original incident and design boundaries
 Lid-close muting uses public IOKit lid notifications and CoreAudio properties. Media pausing uses the system-provided MediaRemote channel as an additional safeguard. Even if a future macOS version stops accepting media pause commands, muting and safe routing remain the primary defenses.
 
 For the full background, see [docs/incident-and-design.md](docs/incident-and-design.md).
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
